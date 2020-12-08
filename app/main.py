@@ -5,6 +5,7 @@ from flask import Flask
 from pathlib import Path
 
 from app.database import db
+from app.routes.index import overview
 
 basedir = Path(__file__).resolve().parent
 load_dotenv(find_dotenv())
@@ -30,6 +31,8 @@ def create_app():
     """
     app = Flask(__name__)
     app.config.from_object(__name__)
+
+    app.register_blueprint(overview)
 
     db.init_app(app)
 
