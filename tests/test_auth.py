@@ -8,7 +8,7 @@ from werkzeug.security import check_password_hash
 from app.database import db
 from app.main import create_app
 from app.models.user import User
-from tests.utils import register
+from tests.utils import login, logout, register
 
 TEST_DB = 'test.db'
 
@@ -72,3 +72,55 @@ class TestAuthentication:
 
         assert 400 == rv.status_code
         assert 'A user with that email address or username already exists.' in json.loads(rv.data)['message']
+
+    def testLogin(self, client):
+        rv = register(
+            client,
+            self.app.config['EMAIL'],
+            self.app.config['USERNAME'],
+            self.app.config['PASSWORD']
+        )
+        rv = login(
+            client,
+            self.app.config['USERNAME'],
+            self.app.config['PASSWORD']
+        )
+
+        assert 200 == rv.status_code
+        assert 'Login successful.' in json.loads(rv.data)['message']
+
+        rv = login(
+            client,
+            self.app.config['USERNAME'] + 'log',
+            self.app.config['PASSWORD']
+        )
+
+        assert 400 == rv.status_code
+        assert 'Invalid username or password.' in json.loads(rv.data)['message']
+
+        rv = login(
+            client,
+            self.app.config['USERNAME'],
+            self.app.config['PASSWORD'] + 'log'
+        )
+
+        assert 400 == rv.status_code
+        assert 'Invalid username or password.' in json.loads(rv.data)['message']
+
+    def testLogout(self, client):
+        rv = register(
+            client,
+            self.app.config['EMAIL'],
+            self.app.config['USERNAME'],
+            self.app.config['PASSWORD']
+        )
+        rv = login(
+            client,
+            self.app.config['USERNAME'],
+            self.app.config['PASSWORD']
+        )
+
+        response = logout(client)
+
+        assert 200 == response.status_code
+        assert 'Logout successful.' in response.json['message']
