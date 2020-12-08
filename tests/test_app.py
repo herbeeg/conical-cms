@@ -72,5 +72,15 @@ class TestMainCase:
         assert self.app.config['USERNAME'] == user.username
         assert check_password_hash(user.password, self.app.config['PASSWORD'])
 
-        assert timestamp < user.created_at
-        assert timestamp < user.updated_at
+        assert timestamp <= user.created_at
+        assert timestamp <= user.updated_at
+
+        rv = register(
+            client,
+            self.app.config['EMAIL'],
+            self.app.config['USERNAME'],
+            self.app.config['PASSWORD']
+        )
+
+        assert 400 == rv.status_code
+        assert 'A user with that email address or username already exists.' in json.loads(rv.data)['message']
