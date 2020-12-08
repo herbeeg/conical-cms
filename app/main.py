@@ -6,6 +6,7 @@ from pathlib import Path
 
 from app.database import db
 from app.routes.index import overview
+from app.routes.register import registration
 
 basedir = Path(__file__).resolve().parent
 load_dotenv(find_dotenv())
@@ -33,6 +34,7 @@ def create_app():
     app.config.from_object(__name__)
 
     app.register_blueprint(overview)
+    app.register_blueprint(registration)
 
     db.init_app(app)
 
