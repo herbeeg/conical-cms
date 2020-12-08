@@ -2,6 +2,9 @@ import pytest
 
 from pathlib import Path
 
+from app.database import db
+from app.main import create_app
+
 TEST_DB = 'test.db'
 
 class TestMainCase:
