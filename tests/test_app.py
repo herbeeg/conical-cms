@@ -1,9 +1,12 @@
+import json
 import pytest
 
 from pathlib import Path
+from werkzeug.security import check_password_hash
 
 from app.database import db
 from app.main import create_app
+from tests.utils import register
 
 TEST_DB = 'test.db'
 
@@ -37,4 +40,28 @@ class TestMainCase:
         )
 
         assert 200 == response.status_code
-        assert b'There is no ignorance, there is knowledge.' == response.data        
+        assert b'There is no ignorance, there is knowledge.' == response.data
+
+    def testDatabase(self):
+        assert Path(TEST_DB).is_file()
+
+    def testRegister(self, client):
+        rv = register(
+            client,
+            self.app.config['EMAIL'],
+            self.app.config['USERNAME'],
+            self.app.config['PASSWORD']
+        )
+
+        assert 'Registration successful.' in json.loads(rv.data)['message']
+
+        user = db.session.query(
+            User
+        ).filter_by(
+            id=1
+        ).one()
+
+        assert 1 == user.id
+        assert self.app.config['EMAIL'] == user.email
+        assert self.app.config['USERNAME'] == user.username
+        assert check_password_hash(user.password, self.app.config['PASSWORD'])
